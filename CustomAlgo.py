@@ -9,8 +9,8 @@ from base64 import b64encode, b64decode
 class CustomAlgo:
     def __init__(self, user_id, **kwargs):
         self.user_id = user_id
-        self.rsa_key = self.__import_rsa_key()
         self.kwargs = kwargs
+        self.rsa_key = self.__import_rsa_key()
 
     def encrypt(self, payload: str, reciever_key_id: int) -> str:
         encryption_key = self.__generate_aes_key(16)
@@ -37,7 +37,6 @@ class CustomAlgo:
 
     def decrypt(self, message: str) -> str:
         rsa_sender_key = self.__get_sender_key(1)
-
         success, encrypted_message = self.__check_message_signature(message, rsa_sender_key)
         
         if not success:
@@ -93,7 +92,7 @@ class CustomAlgo:
         calculated_message_hash = SHA256.new(encrypted_message.encode('utf-8'))
         try:
             pkcs1_15.new(rsa_sender_key.public_key()).verify(calculated_message_hash, recieved_message_signature)
-            return [True, encrypted_message]
+            return [True, encrypted_message.split('.')]
         except:
             return [False, None]
 
@@ -115,12 +114,12 @@ class CustomAlgo:
         return rsa_key
         
     def __get_reciever_key(self, reciever_id):
-        encoded_key = open("keys/rsa_key2.bin").read()
+        encoded_key = open(f"keys/rsa_key{reciever_id}.bin").read()
         rsa_key = RSA.import_key(encoded_key, passphrase="password2")
         return rsa_key
 
     def __get_sender_key(self, sender_id):
-        encoded_key = open("keys/rsa_key1.bin").read()
+        encoded_key = open(f"keys/rsa_key{sender_id}.bin").read()
         rsa_key = RSA.import_key(encoded_key, passphrase="password1")
         return rsa_key
 
